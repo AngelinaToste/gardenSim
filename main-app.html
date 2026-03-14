@@ -1,0 +1,170 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #80ebe8;
+    width: 100%;
+}
+</style>
+</head>
+<body onload="startGame()">
+<script>
+
+var myGamePiece;
+var ground;
+var flower;
+var growCyclePhaseCount = 0;
+
+function startGame() {
+    //myGamePiece = new component(30, 60, "purple", 10, 150);
+    ground = new obstacle(480, 70, "MediumSeaGreen", 0, 200);
+    flower = new item("", 100, 100, "sunflower");
+
+    // Let k listen for keydown
+    document.addEventListener("keydown", function (event) {
+        if (event.key === 'W' || event.key === 'w' || event.key === 'ArrowUp') {
+            console.log('up');
+            moveup();
+        }
+        else if (event.key === 'S' || event.key === 's' || event.key === 'ArrowDown') {
+            console.log('down');
+            movedown();
+        }
+        else if (event.key === 'A' || event.key === 'a' || event.key === 'ArrowLeft') {
+            console.log('left');
+            moveleft();
+        }
+        else if (event.key === 'D' || event.key === 'd' || event.key === 'ArrowRight') {
+            console.log('right');
+            moveright();
+        }
+    });
+
+    myGameArea.start();
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 480;
+        this.canvas.height = 270;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.interval = setInterval(updateGameArea, 20);
+    },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+// function component(width, height, color, x, y) {
+//     this.width = width;
+//     this.height = height;
+//     this.stepSize = 5
+//     this.x = x;
+//     this.y = y;    
+//     this.update = function() {
+//         ctx = myGameArea.context;
+//         ctx.fillStyle = color;
+//         ctx.fillRect(this.x, this.y, this.width, this.height);
+//     }
+//     this.newPos = function (directionChar) { // direction chars: u, d, l, r
+//         switch (directionChar){
+//             case 'u':
+//                 this.y -= this.stepSize;
+//                 break;
+//             case 'd':
+//                 this.y += this.stepSize;
+//                 break;
+//             case 'l':
+//                 this.x -= this.stepSize;
+//                 break;
+//             case 'r':
+//                 this.x += this.stepSize;
+//                 break;
+//         }
+//     }    
+// }
+
+function obstacle(width, height, color, x, y) {
+    this.width = width;
+    this.height = height;
+    this.stepSize = 5
+    this.x = x;
+    this.y = y;    
+    this.update = function() {
+        ctx = myGameArea.context;
+        ctx.fillStyle = color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+}
+
+function item (src, width, height, alt) {
+    this.image = new Image();
+    this.image.src = src;
+    this.width = width;
+    this.height = height;
+    this.alt = alt;
+    this.x = 100;
+    this.y = 100;
+    this.update = function() {
+        ctx = myGameArea.context;
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+    }
+    this.setImage = function(newSrc) {
+        this.image.src = newSrc;
+    };
+
+}
+
+function updateGameArea() {
+    myGameArea.clear();
+    ground.update();
+    flower.update();
+    myGamePiece.newPos();    
+    myGamePiece.update();
+}
+
+function moveup() {
+    myGamePiece.newPos('u'); 
+}
+
+function movedown() {
+    myGamePiece.newPos('d'); 
+}
+
+function moveleft() {
+    myGamePiece.newPos('l'); 
+}
+
+function moveright() {
+    myGamePiece.newPos('r'); 
+}
+function growFlower() {
+    //change the flower image to show that it is growing.
+    var growBtn = document.getElementById("flowerGrowBtn");
+    this.flower.setImage("sunflower" + this.growCyclePhaseCount + ".png");
+    if (this.growCyclePhaseCount < 4){
+        this.growCyclePhaseCount++;
+        growBtn.innerHTML = "Grow flower";
+    } else {
+        growBtn.innerHTML = "Plant a New Seed";
+        this.growCyclePhaseCount = 0;
+    }
+    updateGameArea();
+}
+function digFlower(){
+    this.flower.setImage("");
+    this.growCyclePhaseCount = 0;
+}
+</script>
+<div id="demo"></div>
+
+<p style="display: none;">use WASD controls to move the square</p>
+<p>Use the button below to grow the flower.</p>
+<button id="flowerGrowBtn" onclick="growFlower()">Plant a Seed</button>
+<button id="flowerGrowBtn" onclick="digFlower()">Dig Up Flower</button>
+</body>
+</html>
