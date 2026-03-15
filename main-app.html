@@ -5,22 +5,22 @@
 canvas {
     border:1px solid #d3d3d3;
     background-color: #80ebe8;
-    width: 100%;
+    width: 60%;
+    height: 50%;
 }
 </style>
 </head>
 <body onload="startGame()">
 <script>
 
-var myGamePiece;
+var gamePiece;
 var ground;
-var flower;
-var growCyclePhaseCount = 0;
+var growingPlants = [];
+//var growCyclePhaseCount = 0;
 
 function startGame() {
-    //myGamePiece = new component(30, 60, "purple", 10, 150);
+    gamePiece = new component(30, 60, "purple", 10, 150);
     ground = new obstacle(480, 70, "MediumSeaGreen", 0, 200);
-    flower = new item("", 100, 100, "sunflower");
 
     // Let k listen for keydown
     document.addEventListener("keydown", function (event) {
@@ -39,6 +39,9 @@ function startGame() {
         else if (event.key === 'D' || event.key === 'd' || event.key === 'ArrowRight') {
             console.log('right');
             moveright();
+        }
+        else if (event.key === 'Q' || event.key === 'q') {
+            plantFlower();
         }
     });
 
@@ -59,34 +62,48 @@ var myGameArea = {
     }
 }
 
-// function component(width, height, color, x, y) {
-//     this.width = width;
-//     this.height = height;
-//     this.stepSize = 5
-//     this.x = x;
-//     this.y = y;    
-//     this.update = function() {
-//         ctx = myGameArea.context;
-//         ctx.fillStyle = color;
-//         ctx.fillRect(this.x, this.y, this.width, this.height);
-//     }
-//     this.newPos = function (directionChar) { // direction chars: u, d, l, r
-//         switch (directionChar){
-//             case 'u':
-//                 this.y -= this.stepSize;
-//                 break;
-//             case 'd':
-//                 this.y += this.stepSize;
-//                 break;
-//             case 'l':
-//                 this.x -= this.stepSize;
-//                 break;
-//             case 'r':
-//                 this.x += this.stepSize;
-//                 break;
-//         }
-//     }    
-// }
+function component(width, height, color, x, y) {
+    this.width = width;
+    this.height = height;
+    this.stepSize = 5
+    this.x = x;
+    this.y = y;    
+    this.update = function() {
+        ctx = myGameArea.context;
+        ctx.fillStyle = color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+    this.newPos = function (directionChar) { // direction chars: u, d, l, r
+        switch (directionChar){
+            case 'u':
+                this.y -= this.stepSize;
+                break;
+            case 'd':
+                this.y += this.stepSize;
+                break;
+            case 'l':
+                this.x -= this.stepSize;
+                break;
+            case 'r':
+                this.x += this.stepSize;
+                break;
+        }
+    }  
+}
+
+//FIXME: need to determine how to detect nearby plants so they dont overlap with each other
+function plantNear (item) {
+    growingPlants.forEach((p) => {
+        if (collision(item, p)) {
+            return p;
+        }
+    });
+    return null;
+}
+
+function collision({ object1, object2 }) {
+  return object1.x + object1.width >= object2.x
+}
 
 function obstacle(width, height, color, x, y) {
     this.width = width;
@@ -101,7 +118,7 @@ function obstacle(width, height, color, x, y) {
     }
 }
 
-function item (src, width, height, alt) {
+function plant (src, width, height, alt, idChar) {
     this.image = new Image();
     this.image.src = src;
     this.width = width;
@@ -109,6 +126,9 @@ function item (src, width, height, alt) {
     this.alt = alt;
     this.x = 100;
     this.y = 100;
+    this.growCyclePhaseCount = 0;
+    this.maxGrowPhases = 4;
+
     this.update = function() {
         ctx = myGameArea.context;
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
@@ -116,55 +136,59 @@ function item (src, width, height, alt) {
     this.setImage = function(newSrc) {
         this.image.src = newSrc;
     };
+    this.newPos = function () {
+        this.x = gamePiece.x + gamePiece.width;
 
+    }
+    this.grow = function () {
+        this.setImage(this.alt + this.growCyclePhaseCount + ".png");
+        if (this.growCyclePhaseCount < this.maxGrowPhases){
+            this.growCyclePhaseCount++;
+        } else {
+            this.growCyclePhaseCount = 0;
+        }
+        this.newPos();
+        growingPlants.push(this);
+        updateGameArea();
+    }
 }
 
 function updateGameArea() {
     myGameArea.clear();
     ground.update();
-    flower.update();
-    myGamePiece.newPos();    
-    myGamePiece.update();
+
+    growingPlants.forEach((p) => {
+        p.update();
+        
+    });
+    gamePiece.newPos();    
+    gamePiece.update();
 }
 
 function moveup() {
-    myGamePiece.newPos('u'); 
+    gamePiece.newPos('u'); 
 }
 
 function movedown() {
-    myGamePiece.newPos('d'); 
+    gamePiece.newPos('d'); 
 }
 
 function moveleft() {
-    myGamePiece.newPos('l'); 
+    gamePiece.newPos('l'); 
 }
 
 function moveright() {
-    myGamePiece.newPos('r'); 
+    gamePiece.newPos('r'); 
 }
-function growFlower() {
-    //change the flower image to show that it is growing.
-    var growBtn = document.getElementById("flowerGrowBtn");
-    this.flower.setImage("sunflower" + this.growCyclePhaseCount + ".png");
-    if (this.growCyclePhaseCount < 4){
-        this.growCyclePhaseCount++;
-        growBtn.innerHTML = "Grow flower";
-    } else {
-        growBtn.innerHTML = "Plant a New Seed";
-        this.growCyclePhaseCount = 0;
-    }
-    updateGameArea();
+function plantFlower() {
+    var flower = new plant("", 100, 100, "sunflower", "f");
+    flower.grow();
 }
-function digFlower(){
-    this.flower.setImage("");
-    this.growCyclePhaseCount = 0;
-}
+
 </script>
 <div id="demo"></div>
 
-<p style="display: none;">use WASD controls to move the square</p>
-<p>Use the button below to grow the flower.</p>
-<button id="flowerGrowBtn" onclick="growFlower()">Plant a Seed</button>
-<button id="flowerGrowBtn" onclick="digFlower()">Dig Up Flower</button>
+<p >use WASD or arrow keys to move the square</p>
+<p> use Q to plant a flower </p>
 </body>
 </html>
