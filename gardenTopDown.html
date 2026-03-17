@@ -26,11 +26,10 @@ div {
 
 var gamePiece;
 var growingPlants = [];
-var gameGrid = [];
-//var growCyclePhaseCount = 0;
+var gameGrid = []; // 2d array containing entries such as [(x, y), plant] or [(x, y), 0]
 
 function startGame() {
-    gamePiece = new component(40, 40, "yellow", 1, 1);
+    gamePiece = new component(30, 30, "yellow", 0, 0);
 
     // Let k listen for keydown
     document.addEventListener("keydown", function (event) {
@@ -56,42 +55,38 @@ function startGame() {
     });
 
     myGameArea.start();
+    gameGrid = generateSquareGrid(30);
+    
 }
 
-// function generateSquareGrid(cellSideLength) {
-//     var grid = [];
-//     if (myGameArea.canvas.width != myGameArea.canvas.height){
-//         console.log("Error: Could not generate a square grid.");
-//         return [];  // means could not generate grid
-//     }
+function generateSquareGrid(cellSideLength) {
+    var grid = [];
+    if (((myGameArea.canvas.width % cellSideLength) != 0) && ((myGameArea.canvas.height % cellSideLength) != 0)){
+        console.log("Error: Could not generate a square grid.");
+        return [];  // square grid cannot fit evenly in the given area
+    }
 
-//     //(0, 0) (0, 30) (30, 0) (30, 30)
-//     //(30, 0), (30, 30) (60, 0) (60, 30)
-//     // (i , )
-
-//     //(30, 30)
-
-    
-//     for (var i = 0; i < (myGameArea.canvas.width / cellSideLength); i + cellSizeLength){
-//         var cellCorners = [];
-//         if (i = 0){cellCorners.push([i, i]); // top left}
-
-//         cellCorners.push([i, (i - cellSizeLength)]); // top left
-//         cellCorners.push([i, i]); // bottom left
-//         cellCorners.push([(i + cellSizeLength), i ]); // top right
-//         cellCorners.push([(i + cellSizeLength), (i + cellSizeLength)]); // bottom right
-//     }
-
-
-//     return grid;
-// }
+    // only store top left corner points
+    // use side lengths to determine full area when points are accessed later.
+    for (var i = 0; i < myGameArea.canvas.width; i += cellSideLength){
+        var point;
+        var xval, yval;
+        xval = i;
+        for (var j = 0; j < myGameArea.canvas.height; j += cellSideLength) {
+            yval = j;
+            point = [xval, yval];
+            grid.push([point, 0]); //using 0 as a placeholder to mean no items are attached to this point.
+        }
+    }
+    return grid;
+}
 
 var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
         this.context = this.canvas.getContext("2d");
-        this.canvas.width = 480;
-        this.canvas.height = 480;
+        this.canvas.width = 450;
+        this.canvas.height = 450;
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.interval = setInterval(updateGameArea, 20);
     },
@@ -103,9 +98,10 @@ var myGameArea = {
 function component(width, height, color, x, y) {
     this.width = width;
     this.height = height;
-    this.stepSize = 5;
+    this.stepSize = 30;
     this.x = x;
-    this.y = y;    
+    this.y = y;
+    this.lastDirectionChar = "";    
     this.update = function() {
         ctx = myGameArea.context;
         ctx.fillStyle = color;
@@ -117,33 +113,34 @@ function component(width, height, color, x, y) {
                 if (this.y - this.stepSize > 0){
                     this.y -= this.stepSize;
                 }
+                this.lastDirectionChar = directionChar;
                 break;
             case 'd':
                 if (this.y + this.stepSize < myGameArea.canvas.height){
                     this.y += this.stepSize;
                 }
+                this.lastDirectionChar = directionChar;
                 break;
             case 'l':
                 if (this.x - this.stepSize > 0){
                     this.x -= this.stepSize;
                 }
+                this.lastDirectionChar = directionChar;
                 break;
             case 'r':
                 if (this.x + this.stepSize < myGameArea.canvas.width){
                     this.x += this.stepSize;
                 }
+                this.lastDirectionChar = directionChar;
                 break;
         }
     }  
 }
 
-function plantNear (item) {
-    growingPlants.forEach((p) => {
-        if (collision(item, p)) {
-            return p;
-        }
-    });
-    return null;
+function cellAvailable (x, y) {
+    var cellIndex = gameGrid.findIndex(cell => cell[0][0] === x && cell[0][1] === y);
+    if ( cellIndex != -1 && gameGrid[cellIndex][1] == 0) { return cellIndex; }
+    return -1;
 }
 
 function collision({ object1, object2 }) {
@@ -154,7 +151,7 @@ function collision({ object1, object2 }) {
 function obstacle(width, height, color, x, y) {
     this.width = width;
     this.height = height;
-    this.stepSize = 5
+    this.stepSize = 5;
     this.x = x;
     this.y = y;    
     this.update = function() {
@@ -183,33 +180,58 @@ function plant (src, width, height, alt, idChar) {
         this.image.src = newSrc;
     };
     this.newPos = function () {
-        this.x = gamePiece.x + gamePiece.width;
-        this.y = gamePiece.y + gamePiece.height;
-
+        switch (gamePiece.lastDirectionChar){
+            case 'u': // place it above the character
+                if (gamePiece.y - this.height > 0){
+                    this.y = gamePiece.y - this.height;
+                    this.x = gamePiece.x;
+                }
+                break;
+            case 'd': // place it below the character
+                if (gamePiece.y + this.height < myGameArea.canvas.height){
+                    this.y = gamePiece.y + this.height;
+                    this.x = gamePiece.x;
+                }
+                break;
+            case 'l':
+                if (gamePiece.x - this.width > 0){
+                    this.x = gamePiece.x - this.width;
+                    this.y = gamePiece.y;
+                }
+                break;
+            case 'r':
+                if (gamePiece.x + this.width < myGameArea.canvas.width){
+                    this.x = gamePiece.x + this.width;
+                    this.y = gamePiece.y;
+                }
+                break;
+        }
     }
     this.grow = function () {
-        this.setImage(this.alt + this.growCyclePhaseCount + ".png");
+        this.setImage(this.alt + "4" + ".png");
         if (this.growCyclePhaseCount < this.maxGrowPhases){
             this.growCyclePhaseCount++;
         } else {
             this.growCyclePhaseCount = 0;
         }
         this.newPos();
-        growingPlants.push(this);
-        updateGameArea();
+        var cellIndex = cellAvailable(this.x, this.y);
+        if ( cellIndex != -1) { // check that the spot for the plant is available
+            gameGrid[cellIndex][1] = this;
+            updateGameArea();
+        } else {
+            alert("You can't plant something here.");
+        }
+        
     }
 }
 
 function updateGameArea() {
     myGameArea.clear();
 
-    growingPlants.forEach((p) => {
-        p.update();
-        
+    gameGrid.forEach((p) => {
+        if (p[1] != 0) { p[1].update();}
     });
-
-    //check if gamepiece collides with any walls
-    
     gamePiece.newPos();    
     gamePiece.update();
 }
@@ -230,7 +252,7 @@ function moveright() {
     gamePiece.newPos('r'); 
 }
 function plantFlower() {
-    var flower = new plant("", 40, 40, "sunflower", "f");
+    var flower = new plant("", 30, 30, "sunflower", "f");
     flower.grow();
 }
 
