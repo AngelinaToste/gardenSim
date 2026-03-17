@@ -25,11 +25,14 @@ div {
 <script>
 
 var gamePiece;
+var gamePieceShadow;
 var growingPlants = [];
 var gameGrid = []; // 2d array containing entries such as [(x, y), plant] or [(x, y), 0]
 
 function startGame() {
     gamePiece = new component(30, 30, "yellow", 0, 0);
+    gamePieceShadow = new component(30, 30, "black", 0, 0)
+    gamePieceShadow.isOutlined = true;
 
     // Let k listen for keydown
     document.addEventListener("keydown", function (event) {
@@ -51,6 +54,9 @@ function startGame() {
         }
         else if (event.key === 'Q' || event.key === 'q') {
             plantFlower();
+        }
+        else if (event.key === 'E' || event.key === 'e') {
+            waterFlower();
         }
     });
 
@@ -101,10 +107,12 @@ function component(width, height, color, x, y) {
     this.stepSize = 30;
     this.x = x;
     this.y = y;
+    this.isOutlined = false;
     this.lastDirectionChar = "";    
     this.update = function() {
         ctx = myGameArea.context;
-        ctx.fillStyle = color;
+        if (!this.isOutlined) {ctx.fillStyle = color;}
+        else {ctx.fillStyle = "";}  
         ctx.fillRect(this.x, this.y, this.width, this.height);
     }
     this.newPos = function (directionChar) { // direction chars: u, d, l, r
@@ -134,12 +142,42 @@ function component(width, height, color, x, y) {
                 this.lastDirectionChar = directionChar;
                 break;
         }
+    }
+    this.getShadowPoint = function () {
+       switch (this.lastDirectionChar){
+            case 'u': // place it above the character
+                if (this.y - this.height > 0){
+                    return [this.x, this.y - this.height];
+                }
+                break;
+            case 'd': // place it below the character
+                if (this.y + this.height < myGameArea.canvas.height){
+                    return [this.x, this.y + this.height];
+                }
+                break;
+            case 'l':
+                if (gamePiece.x - this.width > 0){
+                    return [this.x - this.width, gamePiece.y];
+                }
+                break;
+            case 'r':
+                if (gamePiece.x + this.width < myGameArea.canvas.width){
+                    return [this.x + this.width, gamePiece.y];
+                }
+                break;
+        }
     }  
 }
 
 function cellAvailable (x, y) {
     var cellIndex = gameGrid.findIndex(cell => cell[0][0] === x && cell[0][1] === y);
     if ( cellIndex != -1 && gameGrid[cellIndex][1] == 0) { return cellIndex; }
+    return -1;
+}
+
+function cellWithPlant (x, y) {
+    var cellIndex = gameGrid.findIndex(cell => cell[0][0] === x && cell[0][1] === y);
+    if ( cellIndex != -1 && gameGrid[cellIndex][1] != 0) { return cellIndex; }
     return -1;
 }
 
@@ -207,28 +245,29 @@ function plant (src, width, height, alt, idChar) {
                 break;
         }
     }
+    this.placeSeed = function () {
+        this.newPos();
+        var cellIndex = cellAvailable(this.x, this.y);
+        if ( cellIndex != -1) { // check that the spot for the plant is available
+            gameGrid[cellIndex][1] = this;
+            this.grow();
+        } else {
+            alert("You can't plant something here.");
+        }
+    }
     this.grow = function () {
-        this.setImage(this.alt + "4" + ".png");
+        this.setImage(this.alt + this.growCyclePhaseCount + ".png");
         if (this.growCyclePhaseCount < this.maxGrowPhases){
             this.growCyclePhaseCount++;
         } else {
             this.growCyclePhaseCount = 0;
         }
-        this.newPos();
-        var cellIndex = cellAvailable(this.x, this.y);
-        if ( cellIndex != -1) { // check that the spot for the plant is available
-            gameGrid[cellIndex][1] = this;
-            updateGameArea();
-        } else {
-            alert("You can't plant something here.");
-        }
-        
+        updateGameArea();
     }
 }
 
 function updateGameArea() {
     myGameArea.clear();
-
     gameGrid.forEach((p) => {
         if (p[1] != 0) { p[1].update();}
     });
@@ -253,12 +292,24 @@ function moveright() {
 }
 function plantFlower() {
     var flower = new plant("", 30, 30, "sunflower", "f");
-    flower.grow();
+    flower.placeSeed();
+}
+function waterFlower() {
+    //detect if a flower is in the player's "shadow" then
+    var shadowPoint = gamePiece.getShadowPoint(); 
+    var plantIndex = cellWithPlant(shadowPoint[0], shadowPoint[1]);
+    if (plantIndex != -1){
+        gameGrid[plantIndex][1].grow();
+    }
 }
 
 </script>
 <div id="demo"></div>
-<p >use WASD or arrow keys to move the square</p>
-<p> use Q to plant a flower </p>
+<h4>Garden Sim Controls</h4>
+<ul>
+    <li>use WASD or arrow keys to move the square</li>
+    <li>use Q to plant a seed</li>
+    <li>use E to water an already planted seed</li>
+</ul>
 </body>
 </html>
