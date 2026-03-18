@@ -24,14 +24,18 @@ div {
 </div>
 <script>
 
+//FIXME: some bugs with canvas size, character not able to reach top of screen after moving. like there is a barrier
+
 var gamePiece;
 var gamePieceShadow;
 var growingPlants = [];
 var gameGrid = []; // 2d array containing entries such as [(x, y), plant] or [(x, y), 0]
+var scale = 100;
+var canvasSize = [1000, 500]
 
 function startGame() {
-    gamePiece = new component(30, 30, "yellow", 0, 0);
-    gamePieceShadow = new component(30, 30, "black", 0, 0)
+    gamePiece = new component("girlD.png", "girl", scale, scale, "black", 0, 0);
+    gamePieceShadow = new component("", "", scale, scale, "black", 0, 0)
     gamePieceShadow.isOutlined = true;
 
     // Let k listen for keydown
@@ -61,7 +65,7 @@ function startGame() {
     });
 
     myGameArea.start();
-    gameGrid = generateSquareGrid(30);
+    gameGrid = generateSquareGrid(scale);
     
 }
 
@@ -91,8 +95,8 @@ var myGameArea = {
     canvas : document.createElement("canvas"),
     start : function() {
         this.context = this.canvas.getContext("2d");
-        this.canvas.width = 450;
-        this.canvas.height = 450;
+        this.canvas.width = canvasSize[0];
+        this.canvas.height = canvasSize[1];
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.interval = setInterval(updateGameArea, 20);
     },
@@ -101,20 +105,28 @@ var myGameArea = {
     }
 }
 
-function component(width, height, color, x, y) {
+function component(src, alt, width, height, color, x, y) {
+    this.image = new Image();
+    this.image.src = src;
+    this.alt = alt;
     this.width = width;
     this.height = height;
-    this.stepSize = 30;
+    this.stepSize = scale;
     this.x = x;
     this.y = y;
     this.isOutlined = false;
     this.lastDirectionChar = "";    
     this.update = function() {
         ctx = myGameArea.context;
-        if (!this.isOutlined) {ctx.fillStyle = color;}
-        else {ctx.fillStyle = "";}  
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (this.isOutlined) {
+            ctx.fillStyle = ""; 
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }  
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
+    this.setImage = function(newSrc) {
+        this.image.src = newSrc;
+    };
     this.newPos = function (directionChar) { // direction chars: u, d, l, r
         switch (directionChar){
             case 'u':
@@ -122,24 +134,28 @@ function component(width, height, color, x, y) {
                     this.y -= this.stepSize;
                 }
                 this.lastDirectionChar = directionChar;
+                this.setImage(this.alt + directionChar.toUpperCase() + ".png");
                 break;
             case 'd':
                 if (this.y + this.stepSize < myGameArea.canvas.height){
                     this.y += this.stepSize;
                 }
                 this.lastDirectionChar = directionChar;
+                this.setImage(this.alt + directionChar.toUpperCase() + ".png");
                 break;
             case 'l':
                 if (this.x - this.stepSize > 0){
                     this.x -= this.stepSize;
                 }
                 this.lastDirectionChar = directionChar;
+                this.setImage(this.alt + directionChar.toUpperCase() + ".png");
                 break;
             case 'r':
                 if (this.x + this.stepSize < myGameArea.canvas.width){
                     this.x += this.stepSize;
                 }
                 this.lastDirectionChar = directionChar;
+                this.setImage(this.alt + directionChar.toUpperCase() + ".png");
                 break;
         }
     }
@@ -291,7 +307,7 @@ function moveright() {
     gamePiece.newPos('r'); 
 }
 function plantFlower() {
-    var flower = new plant("", 30, 30, "sunflower", "f");
+    var flower = new plant("", scale, scale, "sunflower", "f");
     flower.placeSeed();
 }
 function waterFlower() {
