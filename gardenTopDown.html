@@ -24,19 +24,19 @@ div {
 </div>
 <script>
 
-//FIXME: some bugs with canvas size, character not able to reach top of screen after moving. like there is a barrier
+//TODO: clean up redundancies and replace with more efficient functions for newPos especially
 
 var gamePiece;
-var gamePieceShadow;
+var shadow;
 var growingPlants = [];
 var gameGrid = []; // 2d array containing entries such as [(x, y), plant] or [(x, y), 0]
 var scale = 100;
-var canvasSize = [1000, 500]
+var canvasSize = [1000, 500];
+var shadowVisible = true;
 
 function startGame() {
-    gamePiece = new component("girlD.png", "girl", scale, scale, "black", 0, 0);
-    gamePieceShadow = new component("", "", scale, scale, "black", 0, 0)
-    gamePieceShadow.isOutlined = true;
+    gamePiece = new component("girlD.png", "girl", scale, scale, "black", 0, 0, false);
+    shadow = new component("", "", scale, scale, "black", 0, 0, true);
 
     // Let k listen for keydown
     document.addEventListener("keydown", function (event) {
@@ -105,7 +105,7 @@ var myGameArea = {
     }
 }
 
-function component(src, alt, width, height, color, x, y) {
+function component(src, alt, width, height, color, x, y, isOutlined) {
     this.image = new Image();
     this.image.src = src;
     this.alt = alt;
@@ -114,13 +114,13 @@ function component(src, alt, width, height, color, x, y) {
     this.stepSize = scale;
     this.x = x;
     this.y = y;
-    this.isOutlined = false;
-    this.lastDirectionChar = "";    
+    this.isOutlined = isOutlined;
+    this.lastDirectionChar = "";
+
     this.update = function() {
         ctx = myGameArea.context;
-        if (this.isOutlined) {
-            ctx.fillStyle = ""; 
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (this.isOutlined) { 
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
         }  
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
@@ -130,11 +130,19 @@ function component(src, alt, width, height, color, x, y) {
     this.newPos = function (directionChar) { // direction chars: u, d, l, r
         switch (directionChar){
             case 'u':
-                if (this.y - this.stepSize > 0){
+                if (this.y - this.stepSize >= 0){
                     this.y -= this.stepSize;
                 }
                 this.lastDirectionChar = directionChar;
                 this.setImage(this.alt + directionChar.toUpperCase() + ".png");
+                var shadowPoint = this.getShadowPoint();
+                if (shadowPoint.length != 0){
+                    shadowVisible = true;
+                    shadow.x = shadowPoint[0];
+                    shadow.y = shadowPoint[1];
+                } else {
+                    shadowVisible = false;
+                }
                 break;
             case 'd':
                 if (this.y + this.stepSize < myGameArea.canvas.height){
@@ -142,13 +150,29 @@ function component(src, alt, width, height, color, x, y) {
                 }
                 this.lastDirectionChar = directionChar;
                 this.setImage(this.alt + directionChar.toUpperCase() + ".png");
+                var shadowPoint = this.getShadowPoint();
+                if (shadowPoint.length != 0){
+                    shadowVisible = true;
+                    shadow.x = shadowPoint[0];
+                    shadow.y = shadowPoint[1];
+                } else {
+                    shadowVisible = false;
+                }
                 break;
             case 'l':
-                if (this.x - this.stepSize > 0){
+                if (this.x - this.stepSize >= 0){
                     this.x -= this.stepSize;
                 }
                 this.lastDirectionChar = directionChar;
                 this.setImage(this.alt + directionChar.toUpperCase() + ".png");
+                var shadowPoint = this.getShadowPoint();
+                if (shadowPoint.length != 0){
+                    shadowVisible = true;
+                    shadow.x = shadowPoint[0];
+                    shadow.y = shadowPoint[1];
+                } else {
+                    shadowVisible = false;
+                }
                 break;
             case 'r':
                 if (this.x + this.stepSize < myGameArea.canvas.width){
@@ -156,33 +180,49 @@ function component(src, alt, width, height, color, x, y) {
                 }
                 this.lastDirectionChar = directionChar;
                 this.setImage(this.alt + directionChar.toUpperCase() + ".png");
+                var shadowPoint = this.getShadowPoint();
+                if (shadowPoint.length != 0){
+                    shadowVisible = true;
+                    shadow.x = shadowPoint[0];
+                    shadow.y = shadowPoint[1];
+                } else {
+                    shadowVisible = false;
+                }
                 break;
         }
     }
     this.getShadowPoint = function () {
        switch (this.lastDirectionChar){
             case 'u': // place it above the character
-                if (this.y - this.height > 0){
+                if (this.y - this.height >= 0){
                     return [this.x, this.y - this.height];
-                }
+                } 
+                else { return []; }
                 break;
             case 'd': // place it below the character
                 if (this.y + this.height < myGameArea.canvas.height){
                     return [this.x, this.y + this.height];
                 }
+                else { return []; }
                 break;
             case 'l':
-                if (gamePiece.x - this.width > 0){
+                if (gamePiece.x - this.width >= 0){
                     return [this.x - this.width, gamePiece.y];
                 }
+                else { return []; }
                 break;
             case 'r':
                 if (gamePiece.x + this.width < myGameArea.canvas.width){
                     return [this.x + this.width, gamePiece.y];
                 }
+                else { return []; }
                 break;
         }
-    }  
+    } 
+
+    this.hide =  function () {
+
+    }
 }
 
 function cellAvailable (x, y) {
@@ -234,37 +274,17 @@ function plant (src, width, height, alt, idChar) {
         this.image.src = newSrc;
     };
     this.newPos = function () {
-        switch (gamePiece.lastDirectionChar){
-            case 'u': // place it above the character
-                if (gamePiece.y - this.height > 0){
-                    this.y = gamePiece.y - this.height;
-                    this.x = gamePiece.x;
-                }
-                break;
-            case 'd': // place it below the character
-                if (gamePiece.y + this.height < myGameArea.canvas.height){
-                    this.y = gamePiece.y + this.height;
-                    this.x = gamePiece.x;
-                }
-                break;
-            case 'l':
-                if (gamePiece.x - this.width > 0){
-                    this.x = gamePiece.x - this.width;
-                    this.y = gamePiece.y;
-                }
-                break;
-            case 'r':
-                if (gamePiece.x + this.width < myGameArea.canvas.width){
-                    this.x = gamePiece.x + this.width;
-                    this.y = gamePiece.y;
-                }
-                break;
-        }
+        var shadowPoint = gamePiece.getShadowPoint(); 
+        if (shadowVisible && shadowPoint.length != 0){
+            this.x = shadowPoint[0];
+            this.y = shadowPoint[1];
+            return true;
+        } else {return false;}
     }
     this.placeSeed = function () {
-        this.newPos();
+        var newPosPossible = this.newPos();
         var cellIndex = cellAvailable(this.x, this.y);
-        if ( cellIndex != -1) { // check that the spot for the plant is available
+        if ( newPosPossible && cellIndex != -1) { // check that the spot for the plant is available
             gameGrid[cellIndex][1] = this;
             this.grow();
         } else {
@@ -289,6 +309,8 @@ function updateGameArea() {
     });
     gamePiece.newPos();    
     gamePiece.update();
+    if (shadowVisible) { shadow.update(); }
+    
 }
 
 function moveup() {
@@ -314,6 +336,7 @@ function waterFlower() {
     //detect if a flower is in the player's "shadow" then
     var shadowPoint = gamePiece.getShadowPoint(); 
     var plantIndex = cellWithPlant(shadowPoint[0], shadowPoint[1]);
+    console.log(plantIndex);
     if (plantIndex != -1){
         gameGrid[plantIndex][1].grow();
     }
