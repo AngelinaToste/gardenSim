@@ -6,12 +6,15 @@
 canvas {
     border:1px solid #d3d3d3;
     background-color: #4d975f;
+    width: 99%;
+    height: 80%;
 }
 
 body {
     align-self: center;
     justify-content: center;
     align-content: center;
+    
 }
 div {
     align-self: center;
@@ -61,6 +64,9 @@ function startGame() {
         }
         else if (event.key === 'E' || event.key === 'e') {
             waterFlower();
+        }
+        else if (event.key === 'R' || event.key === 'r') {
+            digFlower();
         }
     });
 
@@ -336,9 +342,17 @@ function waterFlower() {
     //detect if a flower is in the player's "shadow" then
     var shadowPoint = gamePiece.getShadowPoint(); 
     var plantIndex = cellWithPlant(shadowPoint[0], shadowPoint[1]);
-    console.log(plantIndex);
     if (plantIndex != -1){
         gameGrid[plantIndex][1].grow();
+    }
+}
+function digFlower() {
+    //detect if a flower is in the player's "shadow" then
+    var shadowPoint = gamePiece.getShadowPoint(); 
+    var plantIndex = cellWithPlant(shadowPoint[0], shadowPoint[1]);
+    if (plantIndex != -1){
+        gameGrid[plantIndex][1] = 0;
+        updateGameArea();
     }
 }
 
@@ -349,6 +363,7 @@ function waterFlower() {
     <li>use WASD or arrow keys to move the square</li>
     <li>use Q to plant a seed</li>
     <li>use E to water an already planted seed</li>
+    <li>use R to dig up/ remove a plant</li>
 </ul>
 </body>
 </html>
