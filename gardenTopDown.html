@@ -41,6 +41,8 @@ div {
 
     height: 60px;
     width: 200px;
+    font-size: 40px;
+    text-align: left;
 }
 #tool-btn {
     position: absolute;
@@ -114,8 +116,8 @@ li {
     </dialog>
 <body onload="startGame()"> 
 
-<button id="dayNightdisplay">
-    Day
+<button id="dayNightDisplay">
+    Day 0
 </button>
 
 </div>
@@ -138,6 +140,8 @@ var gameGrid = []; // 2d array containing entries such as [(x, y), plant] or [(x
 var scale = 100;
 var canvasSize = [1000, 500];
 var shadowVisible = true;
+var dayCount = 0;
+var isDaytime = true;
 
 function wildPlantGenerator () {
     //calculate how many wild plants
@@ -152,6 +156,24 @@ function wildPlantGenerator () {
     }
 
 }
+
+function updateDay () {
+    dayCount++;
+    isDaytime = true;
+
+    gameGrid.forEach((p) => {
+        if (p[1] != 0) { p[1].grow();}
+    });
+
+}
+
+setInterval(() => {
+    
+    updateDay();
+    console.log("It is a new day! Day "+ dayCount);
+    document.getElementById("dayNightDisplay").innerHTML = "Day " + dayCount;
+
+}, 10000);
 
 function startGame() {
     gamePiece = new component("girlD.png", "girl", scale, scale, "black", 0, 0, false);
