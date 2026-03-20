@@ -1,34 +1,136 @@
 <html>
 <head>
-<meta name="viewport" content="width=device-width"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <meta name="viewport" content="width=device-width"/>
 <style>
 
 canvas {
-    border:1px solid #d3d3d3;
-    background-color: #4d975f;
+    box-sizing: border-box; /*padding is included inside the width*/
     width: 99%;
     height: 80%;
+    padding: 1%;
+    border: 1px solid #d3d3d3;
+    background-color: #4d975f;
+    position: absolute;
+    z-index: 1;
 }
 
 body {
-    align-self: center;
+    display: flex;
     justify-content: center;
-    align-content: center;
+    align-items: center;
+    background-color:burlywood;
+    margin: 5px;
+    padding: 0;
     
 }
 div {
     align-self: center;
     align-content: center;
+    text-align: center;
+    
 }
+#dayNightDisplay {
+    position: absolute;
+    align-self: right;
+    align-content: right;
+    text-align: right;
+    bottom: 30px;
+    left: 30px;
+    z-index: 2;
+
+    height: 60px;
+    width: 200px;
+}
+#tool-btn {
+    position: absolute;
+    align-self: right;
+    align-content: right;
+    text-align: right;
+    top: 30px;
+    right: 30px;
+    z-index: 2;
+
+    width: 60px;       /* increase button size */
+    height: 60px;
+
+    display: flex;     /* helps center icon */
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;  
+}
+#tool-btn .material-icons {
+    font-size: 40px;          /* icon size */
+}
+#modal-btn {
+    position: absolute;
+    align-self: right;
+    align-content: right;
+    text-align: right;
+    top: 30px;
+    right: 30px;
+    z-index: 2;
+
+    width: 40 px;       /* increase button size */
+    height: 40px;
+
+    display: flex;     /* helps center icon */
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;  
+}
+#modal-btn .material-icons {
+    font-size: 30px;          /* icon size */
+}
+dialog {
+    padding: 3%;
+    font-size: 20px;
+}
+li {
+    margin-bottom: 10px;
+}
+
 </style>
 </head>
 <div>
-<body onload="startGame()"></body>
+
+<div>
+    <button id="tool-btn" command="show-modal" commandfor="cg-dialog">
+        <i class="material-icons">settings</i>
+    </button>
+    <dialog id="cg-dialog">
+        <button id="modal-btn" commandfor="cg-dialog" command="close">
+            <i class="material-icons">close</i>
+        </button>
+        <h1>Settings</h1>
+        <h2>Garden Sim Controls</h2>
+        <ul style="text-align: left;">
+            <li>use WASD or arrow keys to move the square</li>
+            <li>use Q to plant a seed</li>
+            <li>use E to water an already planted seed</li>
+            <li>use R to dig up/ remove a plant</li>
+        </ul>
+        
+    </dialog>
+<body onload="startGame()"> 
+
+<button id="dayNightdisplay">
+    Day
+</button>
+
+</div>
+</body>
 </div>
 <script>
 
 //TODO: clean up redundancies and replace with more efficient functions for newPos especially
 
+
+
+
+/*
+---------------GAME RELATED CONTROLS--------------------------------------------------
+*/
 var gamePiece;
 var shadow;
 var growingPlants = [];
@@ -36,6 +138,20 @@ var gameGrid = []; // 2d array containing entries such as [(x, y), plant] or [(x
 var scale = 100;
 var canvasSize = [1000, 500];
 var shadowVisible = true;
+
+function wildPlantGenerator () {
+    //calculate how many wild plants
+    var plantNum = 5;
+
+    for (var i = 0; i < plantNum; i++){
+        var randCell = Math.floor(Math.random() * (gameGrid.length));
+        var wildPlant = new plant("", scale, scale, "wildplant", "f");
+        gameGrid[randCell][1] = wildPlant;
+        gameGrid[randCell][1].grow();
+        gameGrid[randCell][1].update();
+    }
+
+}
 
 function startGame() {
     gamePiece = new component("girlD.png", "girl", scale, scale, "black", 0, 0, false);
@@ -72,6 +188,7 @@ function startGame() {
 
     myGameArea.start();
     gameGrid = generateSquareGrid(scale);
+    //wildPlantGenerator();
     
 }
 
@@ -301,8 +418,6 @@ function plant (src, width, height, alt, idChar) {
         this.setImage(this.alt + this.growCyclePhaseCount + ".png");
         if (this.growCyclePhaseCount < this.maxGrowPhases){
             this.growCyclePhaseCount++;
-        } else {
-            this.growCyclePhaseCount = 0;
         }
         updateGameArea();
     }
@@ -358,12 +473,6 @@ function digFlower() {
 
 </script>
 <div id="demo"></div>
-<h4>Garden Sim Controls</h4>
-<ul>
-    <li>use WASD or arrow keys to move the square</li>
-    <li>use Q to plant a seed</li>
-    <li>use E to water an already planted seed</li>
-    <li>use R to dig up/ remove a plant</li>
-</ul>
+
 </body>
 </html>
