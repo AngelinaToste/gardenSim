@@ -1,0 +1,32 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <meta name="viewport" content="width=device-width"/>
+<link rel="stylesheet" href="styles\mainpage.css">
+<script type="module" src="mainPage.js"></script>
+</head>
+<div>
+    <button id="tool-btn" command="show-modal" commandfor="cg-dialog">
+        <i class="material-icons">settings</i>
+    </button>
+    <dialog id="cg-dialog">
+        <button id="modal-btn" commandfor="cg-dialog" command="close">
+            <i class="material-icons">close</i>
+        </button>
+        <h1>Settings</h1>
+        <h2>Garden Sim Controls</h2>
+        <ul style="text-align: left;">
+            <li>use WASD or arrow keys to move the square</li>
+            <li>use Q to plant a seed</li>
+            <li>use E to water an already planted seeqd</li>
+            <li>use R to dig up/ remove a plant</li>
+        </ul>
+        
+    </dialog>
+    <body> 
+        <button id="dayNightDisplay">
+            Day 0
+        </button>
+    </body>
+</div>
+</html>

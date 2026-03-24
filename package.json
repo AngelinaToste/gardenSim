@@ -1,0 +1,20 @@
+{
+  "name": "gardensim",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AngelinaToste/gardenSim.git"
+  },
+  "author": "Angelina Toste",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AngelinaToste/gardenSim/issues"
+  },
+  "homepage": "https://github.com/AngelinaToste/gardenSim#readme"
+}
