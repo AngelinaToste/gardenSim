@@ -1,0 +1,5 @@
+Description: 
+This is a garden simulation game that mimics actions such as planting seeds, watering them, digging them up, and watching them grow.
+
+Commands to Run the program:
+npm run dev

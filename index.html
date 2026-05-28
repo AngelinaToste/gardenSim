@@ -6,6 +6,18 @@
 <script type="module" src="mainPage.js"></script>
 </head>
 <div>
+    <button id="tool-btn" command="show-modal" style="right: 100px;" commandfor="cg-dialog">
+        <i class="material-icons">save</i>
+    </button>
+    <dialog id="cg-dialog">
+        <button id="modal-btn" commandfor="cg-dialog" command="close">
+            <i class="material-icons">close</i>
+        </button>
+        <h1>Would you like to save the game?</h1>
+        <p>The current state of the game will be saved so you can resume at another time.</p>
+        <button id="save-btn" > YES </button>
+        <button> CANCEL </button>
+    </dialog>
     <button id="tool-btn" command="show-modal" commandfor="cg-dialog">
         <i class="material-icons">settings</i>
     </button>
@@ -17,16 +29,57 @@
         <h2>Garden Sim Controls</h2>
         <ul style="text-align: left;">
             <li>use WASD or arrow keys to move the square</li>
-            <li>use Q to plant a seed</li>
-            <li>use E to water an already planted seeqd</li>
+            <li>use Q to interact with something (ie. plant a seed or use a tool)</li>
+            <li>use E to water an already planted seed</li>
             <li>use R to dig up/ remove a plant</li>
         </ul>
         
     </dialog>
     <body> 
-        <button id="dayNightDisplay">
-            Day 0
-        </button>
+        <div align="bottom">
+        <table>
+            <tr>
+                <td>
+                    <button id="dayNightDisplay">
+                        Day 0
+                    </button>
+                </td>
+                <td id = "item1-box">
+                    <button class="hotbarItem">
+                        <button id="qty1">
+                        </button>
+                        <img id="item1">
+                        <img id="item2">
+                    </button>
+                </td>
+                <td id = "item2-box" >
+                    <button class="hotbarItem">
+                        
+                    </button>
+                    
+                </td>
+                <td id="item3-box">
+                    <button class="hotbarItem">
+                        <image id="item3"></image>
+                    </button>
+                    
+                </td>
+                <td >
+                    <button class="hotbarItem">
+                        <image id="item4"></image>
+                    </button>
+                    
+                </td>
+                <td >
+                    <button class="hotbarItem">
+                        <image id="item5"></image>
+                    </button>
+                    
+                </td>
+            </tr>
+        </table>
+        </div>
+        
     </body>
 </div>
 </html>

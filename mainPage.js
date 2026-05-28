@@ -5,6 +5,9 @@
 //import {plant, plantFlower, waterFlower, digFlower, wildPlantGenerator} from "plantingController.js";
 import {component} from "./playerController.js";
 import {plant, plantFlower, waterFlower, digFlower} from "./plantingController.js";
+import {generateRandomFlowerShopLocation} from "./locationController.js";
+import {InventoryItem} from "./class/InventoryItemClass.js";
+
 var gamePiece;
 var shadow;
 var gameGrid = []; // 2d array containing entries such as [(x, y), plant] or [(x, y), 0]
@@ -13,7 +16,28 @@ var canvasSize = [1000, 500];
 var shadowVisible = true;
 var dayCount = 0;
 var isDaytime = true;
-var dayInterval = 5000; // in miliseconds
+var dayInterval = 60000;
+
+var hotbar = []
+    
+
+fetch('config/config.json')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(config => {
+        //console.log("Loaded config:", config);
+        dayInterval = config.dayIntervalSec * 1000; // in miliseconds
+    })
+    .catch(error => {
+        console.error("Error loading config.json:", error);
+    });
+
+
+
 
 
 function updateDay () {
@@ -21,7 +45,14 @@ function updateDay () {
     isDaytime = true;
 
     gameGrid.forEach((p) => {
-        if (p[1] != 0) { p[1].grow(gameGrid);}
+        if (p[1] != 0) {
+            try {
+                p[1].grow(gameGrid)
+            }
+            catch {
+                //p[1].interact(gameGrid)
+            }
+        }
     });
 
 }
@@ -49,29 +80,93 @@ function startGame() {
             console.log('right');
             moveright();
         }
+        //FIXME: need to rework controls so there is an "interact" control instead of two different ones for planting and watering.
+        // if user interacts with an already planted plant, they water it (remove might still be a separate control)
         else if (event.key === 'Q' || event.key === 'q') {
-            plantFlower(scale, gameGrid, gamePiece);
+            useItem()
         }
         else if (event.key === 'E' || event.key === 'e') {
-            waterFlower(gamePiece, gameGrid);
+            waterFlower(gamePiece, gameGrid); //FIXME: bug when the object in the grid is not a plant type
         }
         else if (event.key === 'R' || event.key === 'r') {
-            digFlower(gamePiece, gameGrid);
+            digFlower(gamePiece, gameGrid); //FIXME: bug when the object in the grid is not a plant type
+        }
+        else if (parseInt(event.key) >=1 && parseInt(event.key) <= 5 ){
+           //use hotbar item
+           activateItem(event.key);
         }
     });
 
+    
+
+    setupHotbar();
+
+
     myGameArea.start();
     gameGrid = generateSquareGrid(scale);
+    generateRandomFlowerShopLocation (scale, gameGrid, myGameArea);
     //wildPlantGenerator();
 
     setInterval(() => {
         updateDay();
         document.getElementById("dayNightDisplay").innerHTML = "Day " + dayCount;
     }, dayInterval); 
+
     
 }
 
 window.addEventListener('load',startGame );
+
+function setupHotbar() {
+    let hotbarItems = [
+        document.getElementById("item1"),
+        document.getElementById("item2"),
+        document.getElementById("item3"),
+        document.getElementById("item4"),
+        document.getElementById("item5")
+    ];
+
+    hotbarItems.forEach(item => {
+        if (item.id == "item1"){
+            // insert item image
+            item.src = "./Images/plant/seeds/sunflowerSeedBag.png";
+            item.style.width = "55px";
+            item.style.height = "65px";
+            item.style.transform = "scale(1.2)";
+            item.style.left = "250px";
+
+            var invItem = new InventoryItem("sunflowerSeedBag", 5, 0, 1);
+            hotbar.push(invItem);
+            //insert item qty1
+            document.getElementById("qty1").innerHTML = invItem.itemQty;
+        }
+        // else if (item.id == "item2"){
+        //     // insert item image
+        //     item.src = "./Images/tool/wateringCan.png";
+        //     item.style.width = "55px";
+        //     item.style.height = "65px";
+        //     item.style.transform = "scale(1.2)";
+        //     item.style.left = "250px";
+
+        //     var invItem = new InventoryItem("wateringCan", 0, 0);
+        //     hotbar.push(invItem);
+        // }
+        // else if (item.id == "item3"){
+        //     // insert item image
+        //     item.src = "./Images/tool/shovel.png";
+        //     item.style.width = "55px";
+        //     item.style.height = "65px";
+        //     item.style.transform = "scale(1.2)";
+        //     item.style.left = "250px";
+
+        //     var invItem = new InventoryItem("shovel", 0, 0);
+        //     hotbar.push(invItem);
+        // }
+    });
+    
+    
+    
+}
 
 function generateSquareGrid(cellSideLength) {
     var grid = [];
@@ -136,4 +231,84 @@ function moveright() {
     gamePiece.newPos('r'); 
 }
 
+function useItem(){
+    // find currently active item
+    const activeItem = hotbar.filter(item => item.itemActive)
+    if (activeItem.length == 0){ 
+        alert("Please activate a tool using the hotbar keys.");
+        return;
+    }
+    // use the active item by performing its function and lowering qty or item durability?
+    if (parseInt(activeItem[0].itemType) == 0){
+        activeItem[0].itemQty = activeItem[0].itemQty-1;
+        
+        if ( activeItem[0].itemQty <= 0){
+            // clear item image and qty
+            document.getElementById("item" + activeItem[0].itemIndex).style.visibility = "hidden";
+            document.getElementById("qty" + activeItem[0].itemIndex).style.visibility = "hidden";
 
+        } else {
+            document.getElementById("qty" + activeItem[0].itemIndex).innerHTML = activeItem[0].itemQty
+        
+            plantFlower(scale, gameGrid, gamePiece);
+            console.log("item used")
+        }
+    }
+
+    
+}
+
+function activateItem(item) {
+    switch (item){
+        case "1":
+            //set "active" or inUse Flag
+            hotbar[0].itemActive = !(hotbar[0].itemActive);
+            //show box around the item selected
+            document.getElementById("item1").style.border = hotbar[0].itemActive ? "1px solid black" : "0px" ;
+            break;
+        case "2":
+            break;
+        case "3":
+            break;
+        case "4":
+            break;
+        case "5":
+            break;
+    }
+}
+
+async function saveGameData () {
+    const now = new Date();
+    let gameData = {
+        user: JSON.stringify(gamePiece, null, 4),
+        shadow: JSON.stringify(shadow, null, 4),
+        game_grid: JSON.stringify(gameGrid, null, 4),
+        game_area: JSON.stringify(myGameArea, null, 4),
+        day: {
+                day_count: dayCount,
+                day_interval: dayInterval,
+            },
+        save_datetime: now.toISOString(),
+    };
+    
+    const fs = require("fs");
+    
+    fs.writeFileSync(
+        "save.json",
+        JSON.stringify(gameData, null, 4)
+    );
+    console.log("saved");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById("save-btn");
+
+        btn.addEventListener("click", saveGameData);
+    });
+
+function loadGameData () {
+    const savedData = JSON.parse(
+        fs.readFileSync("save.json", "utf8")
+    );
+    // use info from saved data to populate game
+}

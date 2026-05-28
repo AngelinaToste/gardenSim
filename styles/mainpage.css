@@ -16,6 +16,7 @@ body {
     background-color:burlywood;
     margin: 5px;
     padding: 0;
+    z-index: -1;
     
 }
 div {
@@ -84,4 +85,108 @@ dialog {
 }
 li {
     margin-bottom: 10px;
+}
+
+table{
+    table-layout: fixed; /* Ensures column widths are fixed */
+    z-index: 3;
+    border: 1px solid black;
+}
+tr {
+    height: 65px;
+    border: 1px;
+}
+#item1-box {
+    height: 65px;
+    width: 65px;
+    font-size: 40px;
+    text-align: left;
+    bottom : 30px;
+
+}
+#item2-box {
+    height: 65px;
+    width: 65px;
+    font-size: 40px;
+    /* text-align: left; */
+    bottom : 30px;
+    left: 80px;
+
+}
+
+#qty1 {
+    border-radius: 100px;
+    color: black;
+    z-index: 3;
+
+    position: absolute;
+    align-self: right;
+    align-content: right;
+    text-align: right;
+
+    height: 28px;
+    width: 26px;
+    font-size: 15px;
+    background-color:white;
+    bottom : 70px;
+    left: 250px;
+}
+
+/*learn now to make the item 1 apply to 5 more items but spaced positioning*/
+#item1 {
+    position: absolute;
+    align-self: right;
+    align-content: right;
+    text-align: right;
+    z-index: 1;
+
+    height: 65px;
+    width: 65px;
+    font-size: 40px;
+    text-align: left;
+    bottom : 30px;
+}
+
+#item2 {
+    border-radius: 100px;
+    z-index: 3;
+
+    position: absolute;
+    align-self: right;
+    align-content: right;
+    text-align: right;
+
+    height: 65px;
+    width: 65px;
+    font-size: 40px;
+    text-align: left;
+    left: 500px;
+    bottom : 30px;
+    
+    
+}
+
+
+#item3 {
+    border-radius: 100px;
+    z-index: 3;
+
+    position: absolute;
+    align-self: right;
+    align-content: right;
+    text-align: right;
+
+    height: 65px;
+    width: 65px;
+    font-size: 40px;
+    text-align: left;
+    left: 900px;
+    bottom : 30px;
+}
+
+td {
+    vertical-align: middle;
+}
+table {
+    border-collapse: collapse;
 }

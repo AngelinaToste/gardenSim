@@ -56,7 +56,7 @@ export function plant (src, width, height, alt, idChar) {
             updateGameArea();
 
         } else if ((!this.isWatered) && (this.growCyclePhaseCount > this.maxGrowPhases)){
-            if (this.healthPct == 0){ this.die(); }
+            if (this.healthPct == 0){ this.die(gameGrid); }
             this.healthPct -= 25;
             updateGameArea();
 
@@ -70,14 +70,14 @@ export function plant (src, width, height, alt, idChar) {
             this.healthPct-=25;
             this.setImage(this.alt + this.growCyclePhaseCount + ".png");
             this.growCyclePhaseCount++;
-            if (this.healthPct == 0){ this.die(); }
+            if (this.healthPct == 0){ this.die(gameGrid); }
             updateGameArea();
         }
-        else if (this.healthPct == 0){ this.die(); }
+        else if (this.healthPct == 0){ this.die(gameGrid); }
         console.log("plant grow phase: ", this.growCyclePhaseCount);
         
     }
-    this.die = function () {
+    this.die = function (gameGrid) {
         var plantIndex = cellWithPlant(this.x, this.y, gameGrid);
         if (plantIndex != -1){
             gameGrid[plantIndex][1] = 0; // remove the plant from the game
