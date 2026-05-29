@@ -64,36 +64,20 @@ function startGame() {
 
     // Let k listen for keydown
     document.addEventListener("keydown", function (event) {
-        if (event.key === 'W' || event.key === 'w' || event.key === 'ArrowUp') {
-            console.log('up');
-            moveup();
-        }
-        else if (event.key === 'S' || event.key === 's' || event.key === 'ArrowDown') {
-            console.log('down');
-            movedown();
-        }
-        else if (event.key === 'A' || event.key === 'a' || event.key === 'ArrowLeft') {
-            console.log('left');
-            moveleft();
-        }
-        else if (event.key === 'D' || event.key === 'd' || event.key === 'ArrowRight') {
-            console.log('right');
-            moveright();
-        }
-        //FIXME: need to rework controls so there is an "interact" control instead of two different ones for planting and watering.
-        // if user interacts with an already planted plant, they water it (remove might still be a separate control)
-        else if (event.key === 'Q' || event.key === 'q') {
-            useItem()
-        }
-        else if (event.key === 'E' || event.key === 'e') {
-            waterFlower(gamePiece, gameGrid); //FIXME: bug when the object in the grid is not a plant type
-        }
-        else if (event.key === 'R' || event.key === 'r') {
-            digFlower(gamePiece, gameGrid); //FIXME: bug when the object in the grid is not a plant type
-        }
-        else if (parseInt(event.key) >=1 && parseInt(event.key) <= 5 ){
-           //use hotbar item
-           activateItem(event.key);
+
+        switch (true){
+            case event.key == 'ArrowUp': moveup();
+                break;
+            case event.key == 'ArrowDown': movedown();
+                break;
+            case event.key == 'ArrowLeft': moveleft();
+                break;
+            case event.key == 'ArrowRight': moveright();
+                break;
+            case event.key == 'Q' ||  event.key == 'q': useItem(gamePiece, gameGrid);
+                break;
+            case  event.key in ['1', '2', '3', '4', '5']: activateItem(event.key, hotbar);
+                break; 
         }
     });
 
@@ -134,34 +118,37 @@ function setupHotbar() {
             item.style.height = "65px";
             item.style.transform = "scale(1.2)";
             item.style.left = "250px";
+            item.style.backgroundColor = "white";
 
             var invItem = new InventoryItem("sunflowerSeedBag", 5, 0, 1);
             hotbar.push(invItem);
             //insert item qty1
             document.getElementById("qty1").innerHTML = invItem.itemQty;
         }
-        // else if (item.id == "item2"){
-        //     // insert item image
-        //     item.src = "./Images/tool/wateringCan.png";
-        //     item.style.width = "55px";
-        //     item.style.height = "65px";
-        //     item.style.transform = "scale(1.2)";
-        //     item.style.left = "250px";
+        else if (item.id == "item2"){
+            // insert item image
+            item.src = "./Images/tool/wateringCan.png";
+            item.style.width = "55px";
+            item.style.height = "65px";
+            item.style.transform = "scale(1.2)";
+            item.style.left = "350px";
+            item.style.backgroundColor = "white";
 
-        //     var invItem = new InventoryItem("wateringCan", 0, 0);
-        //     hotbar.push(invItem);
-        // }
-        // else if (item.id == "item3"){
-        //     // insert item image
-        //     item.src = "./Images/tool/shovel.png";
-        //     item.style.width = "55px";
-        //     item.style.height = "65px";
-        //     item.style.transform = "scale(1.2)";
-        //     item.style.left = "250px";
+            var invItem = new InventoryItem("wateringCan", 0, 1, 2);
+            hotbar.push(invItem);
+        }
+        else if (item.id == "item3"){
+            // insert item image
+            item.src = "./Images/tool/shovel.png";
+            item.style.width = "55px";
+            item.style.height = "65px";
+            item.style.transform = "scale(1.2)";
+            item.style.left = "450px";
+            item.style.backgroundColor = "white";
 
-        //     var invItem = new InventoryItem("shovel", 0, 0);
-        //     hotbar.push(invItem);
-        // }
+            var invItem = new InventoryItem("shovel", 0, 2, 3);
+            hotbar.push(invItem);
+        }
     });
     
     
@@ -231,74 +218,113 @@ function moveright() {
     gamePiece.newPos('r'); 
 }
 
-function useItem(){
-    // find currently active item
-    const activeItem = hotbar.filter(item => item.itemActive)
-    if (activeItem.length == 0){ 
-        alert("Please activate a tool using the hotbar keys.");
-        return;
-    }
-    // use the active item by performing its function and lowering qty or item durability?
-    if (parseInt(activeItem[0].itemType) == 0){
+// operation: when true, add items, when false, remove items
+function manageQty (operation, activeItem) {
+    if (!operation){
         activeItem[0].itemQty = activeItem[0].itemQty-1;
-        
         if ( activeItem[0].itemQty <= 0){
             // clear item image and qty
             document.getElementById("item" + activeItem[0].itemIndex).style.visibility = "hidden";
             document.getElementById("qty" + activeItem[0].itemIndex).style.visibility = "hidden";
+            hotbar[activeItem[0].itemIndex - 1].itemActive = false 
 
         } else {
             document.getElementById("qty" + activeItem[0].itemIndex).innerHTML = activeItem[0].itemQty
-        
-            plantFlower(scale, gameGrid, gamePiece);
-            console.log("item used")
         }
+    } else {
+        activeItem[0].itemQty = activeItem[0].itemQty+1;
+        if ( activeItem[0].itemQty == 1){
+            // add item image and new qty
+            document.getElementById("item" + activeItem[0].itemIndex).style.visibility = "visible";
+            document.getElementById("qty" + activeItem[0].itemIndex).style.visibility = "visible";
+
+        } else {
+            document.getElementById("qty" + activeItem[0].itemIndex).innerHTML = activeItem[0].itemQty
+        }
+    }
+        
+}
+
+    //each index corresponds to the type of item, functionality is listed
+    function itemTypeFunctionality (type, scale, gameGrid, gamePiece) {
+        switch (type){
+            case 0:
+                plantFlower(scale, gameGrid, gamePiece) 
+                break;
+            case 1: 
+                waterFlower(gamePiece, gameGrid)
+                break;
+            case 2:
+                digFlower(gamePiece, gameGrid) 
+                break;
+        }
+    }
+
+function useItem( gamePiece, gameGrid ){
+    // find currently active item
+    const activeItem = hotbar.filter(item => item.itemActive)
+
+    if (activeItem.length == 0){ 
+        alert("Please activate a tool using the hotbar keys.");
+        return;
+    }
+
+    // use the active item by performing its function and lowering qty or item durability?
+    if (parseInt(activeItem[0].itemType) == 0){
+        manageQty(false, activeItem) //reduce item amoun1t
+        if (activeItem[0].itemQty >= 0){ itemTypeFunctionality(parseInt(activeItem[0].itemType), scale, gameGrid, gamePiece)}
+
+    } else {
+        itemTypeFunctionality(parseInt(activeItem[0].itemType), scale, gameGrid, gamePiece)
     }
 
     
 }
 
-function activateItem(item) {
-    switch (item){
-        case "1":
-            //set "active" or inUse Flag
-            hotbar[0].itemActive = !(hotbar[0].itemActive);
-            //show box around the item selected
-            document.getElementById("item1").style.border = hotbar[0].itemActive ? "1px solid black" : "0px" ;
-            break;
-        case "2":
-            break;
-        case "3":
-            break;
-        case "4":
-            break;
-        case "5":
-            break;
+function activateItem(item, hotbar) {
+    
+    if (document.getElementById("item" + item).visibility == "hidden"){
+        alert("no item found")
+        return
+
     }
+    //clear previously active item
+    const activeItem = hotbar.filter(item => item.itemActive);
+    if (activeItem.length != 0  && (activeItem[0].itemIndex != item.itemIndex)) {
+        var j = activeItem[0].itemIndex - 1;
+        hotbar[j].itemActive = false;
+        //hide box around the item selected
+        document.getElementById("item" + activeItem[0].itemIndex).style.border = hotbar[j].itemActive ? "1px solid black" : "0px" ;
+    }
+    // add new active item
+    var i = item - 1;
+    //set "active" or inUse Flag
+    hotbar[i].itemActive = !(hotbar[i].itemActive);
+    //show box around the item selected
+    document.getElementById("item" + item).style.border = hotbar[i].itemActive ? "1px solid black" : "0px" ;
+    
 }
 
 async function saveGameData () {
     const now = new Date();
     let gameData = {
-        user: JSON.stringify(gamePiece, null, 4),
-        shadow: JSON.stringify(shadow, null, 4),
-        game_grid: JSON.stringify(gameGrid, null, 4),
-        game_area: JSON.stringify(myGameArea, null, 4),
+        user: gamePiece,
+        shadow: shadow,
+        game_grid: gameGrid,
+        game_area: myGameArea,
         day: {
                 day_count: dayCount,
                 day_interval: dayInterval,
             },
         save_datetime: now.toISOString(),
     };
-    
-    const fs = require("fs");
-    
-    fs.writeFileSync(
-        "save.json",
-        JSON.stringify(gameData, null, 4)
-    );
-    console.log("saved");
-}
+        const a = document.createElement("a");
+        const file = new Blob([JSON.stringify(gameData)], { type: 'application/json' });
+        a.href = URL.createObjectURL(file);
+        a.download = "save.json";
+        a.click();
+        console.log("saved");
+    }
 
 document.addEventListener("DOMContentLoaded", () => {
         const btn = document.getElementById("save-btn");
@@ -307,8 +333,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 function loadGameData () {
-    const savedData = JSON.parse(
-        fs.readFileSync("save.json", "utf8")
-    );
     // use info from saved data to populate game
 }

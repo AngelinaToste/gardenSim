@@ -1,8 +1,8 @@
 canvas {
     box-sizing: border-box; /*padding is included inside the width*/
-    width: 99%;
+    width: 95%;
     height: 80%;
-    padding: 1%;
+    padding: 0.5%;
     border: 1px solid #d3d3d3;
     background-color: #4d975f;
     position: absolute;
@@ -148,8 +148,7 @@ tr {
 }
 
 #item2 {
-    border-radius: 100px;
-    z-index: 3;
+    z-index: 1;
 
     position: absolute;
     align-self: right;
@@ -168,8 +167,7 @@ tr {
 
 
 #item3 {
-    border-radius: 100px;
-    z-index: 3;
+    z-index: 1;
 
     position: absolute;
     align-self: right;

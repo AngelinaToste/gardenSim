@@ -4,7 +4,7 @@ export class InventoryItem {
             this.qty = qty;
             this.type = type;
             this.isActive = false;
-            this.hotbarIndex = index;
+            this.index = index;
         }
         get itemName () {
             return this.name
@@ -19,7 +19,7 @@ export class InventoryItem {
             return this.type
         }
         get itemIndex () {
-            return this.hotbarIndex
+            return this.index
         }
 
         set itemName (name) {
@@ -35,7 +35,7 @@ export class InventoryItem {
             this.type = type
         }
         set itemIndex (index) {
-            this.hotbarIndex = index
+            this.index = index
         }
         
     }
