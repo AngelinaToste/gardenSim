@@ -1,7 +1,7 @@
 //plantController.js
 // contains plant component object with associated variables and methods
 // contains planting actions used by the player
-import {myGameArea, updateGameArea} from "./mainPage.js";
+import {myGameArea, updateGameArea} from "/app/pages/gamePage/mainPage.js";
 export function plant (src, width, height, alt, idChar) {
     this.image = new Image();
     this.image.src = "Images/plant/" + src;
@@ -26,7 +26,7 @@ export function plant (src, width, height, alt, idChar) {
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
     this.setImage = function(newSrc) {
-        this.image.src = "Images/plant/" + newSrc;
+        this.image.src = "/Images/plant/" + newSrc;
     };
     this.newPos = function (gamePiece) {
         var shadowPoint = gamePiece.getShadowPoint(); 

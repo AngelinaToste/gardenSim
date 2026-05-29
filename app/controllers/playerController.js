@@ -2,7 +2,7 @@
 // contains player component object with associated variables and methods
 export function component(src, alt, width, height, color, x, y, isOutlined, scale, myGameArea, shadowVisible, shadow) {
     this.image = new Image();
-    src == "" ? this.image.src = "" : this.image.src = "Images/player/" + src;
+    src == "" ? this.image.src = "" : this.image.src = "/Images/player/" + src;
     this.alt = alt;
     this.width = width;
     this.height = height;
@@ -21,7 +21,7 @@ export function component(src, alt, width, height, color, x, y, isOutlined, scal
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
     this.setImage = function(newSrc) {
-        this.image.src = "Images/player/" + newSrc;
+        this.image.src = "/Images/player/" + newSrc;
     };
     this.newPos = function (directionChar) { // direction chars: u, d, l, r
         switch (directionChar){

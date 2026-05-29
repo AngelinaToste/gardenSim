@@ -1,10 +1,10 @@
 // mainPage.js
 // Overall game controls for saving, updating the day, updating game area, etc 
 
-import {component} from "./playerController.js";
-import {plant, plantFlower, waterFlower, digFlower} from "./plantingController.js";
-import {generateRandomFlowerShopLocation} from "./locationController.js";
-import {InventoryItem} from "./class/InventoryItemClass.js";
+import {component} from "../../controllers/playerController.js";
+import {plant, plantFlower, waterFlower, digFlower} from "../../controllers/plantingController.js";
+import {generateRandomFlowerShopLocation} from "../../controllers/locationController.js";
+import {InventoryItem} from "../../../class/InventoryItemClass.js";
 
 var gamePiece;
 var shadow;
@@ -15,11 +15,12 @@ var shadowVisible = true;
 var dayCount = 0;
 var isDaytime = true;
 var dayInterval = 60000;
+var hasSavedData = false;
 
 var hotbar = []
     
 
-fetch('config/config.json')
+fetch('/config/config.json')
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -34,7 +35,26 @@ fetch('config/config.json')
         console.error("Error loading config.json:", error);
     });
 
+window.addEventListener('load', function() {
+    //pull local storage data
+    try {
+        var savedData = JSON.parse(localStorage.getItem("saveData"))
+        if(savedData){
+            hasSavedData = true;
 
+            //fixme some data is not coming through properly, look into how it is saved
+            //gamePiece = savedData.user;
+            // shadow = savedData.shadow;
+            // gameGrid = savedData.game_grid;
+            // myGameArea = savedData.game_area;
+            // dayCount = savedData.day.day_count;
+            // dayInterval = savedData.day.day_interval;
+        }
+
+    } catch (e) {
+        console.error("There was an error loading the save file.", e)
+    }
+});
 
 
 
@@ -57,8 +77,11 @@ function updateDay () {
 
 function startGame() {
     
-    shadow = new component("", "", scale, scale, "black", 0, 0, true, scale, myGameArea, shadowVisible, null);
-    gamePiece = new component("girlD.png", "girl", scale, scale, "black", 0, 0, false, scale, myGameArea, shadowVisible, shadow);
+    //if (!hasSavedData){
+        shadow = new component("", "", scale, scale, "black", 0, 0, true, scale, myGameArea, shadowVisible, null);
+        gamePiece = new component("girlD.png", "girl", scale, scale, "black", 0, 0, false, scale, myGameArea, shadowVisible, shadow);
+    //}
+    
 
     // Let k listen for keydown
     document.addEventListener("keydown", function (event) {
@@ -111,7 +134,7 @@ function setupHotbar() {
     hotbarItems.forEach(item => {
         if (item.id == "item1"){
             // insert item image
-            item.src = "./Images/plant/seeds/sunflowerSeedBag.png";
+            item.src = "/Images/plant/seeds/sunflowerSeedBag.png";
             item.style.width = "55px";
             item.style.height = "65px";
             item.style.transform = "scale(1.2)";
@@ -125,7 +148,7 @@ function setupHotbar() {
         }
         else if (item.id == "item2"){
             // insert item image
-            item.src = "./Images/tool/wateringCan.png";
+            item.src = "/Images/tool/wateringCan.png";
             item.style.width = "55px";
             item.style.height = "65px";
             item.style.transform = "scale(1.2)";
@@ -137,7 +160,7 @@ function setupHotbar() {
         }
         else if (item.id == "item3"){
             // insert item image
-            item.src = "./Images/tool/shovel.png";
+            item.src = "/Images/tool/shovel.png";
             item.style.width = "55px";
             item.style.height = "65px";
             item.style.transform = "scale(1.2)";
@@ -330,6 +353,21 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", saveGameData);
     });
 
-function loadGameData () {
-    // use info from saved data to populate game
+function showStartPage(){
+    try {
+        // Validate the target URL string
+        const target = "../startPage/startPage.html";
+        if (typeof target !== "string" || !target) {
+            throw new Error("Invalid URL");
+        }
+        window.location.href = target;
+    } catch (err) {
+        console.error("Navigation failed:", err);
+    }
 }
+document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById("quit-btn");
+
+        btn.addEventListener("click", showStartPage);
+    });
+

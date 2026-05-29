@@ -2,7 +2,7 @@
 
 function location(src, width, height, alt) {
     this.image = new Image();
-    this.image.src = "Images/location/" + src;
+    this.image.src = "/Images/location/" + src;
     this.width = width;
     this.height = height;
     this.alt = alt;
