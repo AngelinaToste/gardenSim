@@ -1,8 +1,6 @@
 // mainPage.js
 // Overall game controls for saving, updating the day, updating game area, etc 
 
-
-//import {plant, plantFlower, waterFlower, digFlower, wildPlantGenerator} from "plantingController.js";
 import {component} from "./playerController.js";
 import {plant, plantFlower, waterFlower, digFlower} from "./plantingController.js";
 import {generateRandomFlowerShopLocation} from "./locationController.js";

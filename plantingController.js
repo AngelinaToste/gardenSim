@@ -18,6 +18,11 @@ export function plant (src, width, height, alt, idChar) {
 
     this.update = function(myGameArea) {
         var ctx = myGameArea.context;
+        if (this.isWatered){
+            var ctx = myGameArea.context;
+            ctx.fillStyle = "#115237";
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
     this.setImage = function(newSrc) {
@@ -43,7 +48,6 @@ export function plant (src, width, height, alt, idChar) {
     }
     this.water = function () {
         this.isWatered = true;
-        console.log("plant watered");
     }
     this.grow = function (gameGrid) {
         if (this.isSeed) {
