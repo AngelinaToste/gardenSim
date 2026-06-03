@@ -2,9 +2,22 @@
 <head>
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <meta name="viewport" content="width=device-width"/>
-<script src ="/app/pages/startPage/startPage.js"></script>
+<script>
+    window.addEventListener('load', function() {
+        try {
+            // Validate the target URL string
+            const target = "./app/pages/startPage/startPage.html";
+            if (typeof target !== "string" || !target) {
+                throw new Error("Invalid URL");
+            }
+            window.location.href = target;
+        } catch (err) {
+            console.error("Navigation failed:", err);
+        }
+    })
+</script>
 </head>
-<body onload="showStartPage()">
+<body>
 
 </body>
 
